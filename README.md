@@ -2,7 +2,6 @@
 
 A modern rewrite of the jigsaw puzzle creator: plain **HTML + CSS + JavaScript (ES modules)** and a single `<canvas>`. No framework, no build step, no dependencies — ready for GitHub Pages.
 
-![preview](assets/default.jpg)
 
 ## The look
 
