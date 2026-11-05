@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="A minimal jigsaw puzzle studio. Load any image, choose a piece count, and solve.">
+  <meta name="theme-color" content="#f4f3f0">
+  <title>Puzzle Studio — Jigsaw Puzzles</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="table">
+    <header class="topbar" id="topbar">
+      <a class="brand" href="./" aria-label="Puzzle Studio home">
+        <img class="brand-mark" src="assets/favicon.svg" width="40" height="40" alt="" aria-hidden="true">
+        <span class="brand-text">
+          <span class="brand-name">Puzzle <em>Studio</em></span>
+          <span class="brand-tag">Jigsaw puzzles</span>
+        </span>
+      </a>
+
+      <nav class="toolbar" aria-label="Puzzle actions">
+        <button class="btn ghost" id="previewBtn" type="button" aria-pressed="false" title="Preview the finished picture">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/>
+          </svg>
+          <span>Preview</span>
+        </button>
+        <button class="btn ghost" id="shuffleBtn" type="button" title="Scatter the pieces again">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3 7h3.5c4.5 0 6.5 10 11 10H21"/><path d="m18 14 3 3-3 3"/><path d="M3 17h3.5c1.6 0 2.9-1.3 4.1-3"/><path d="M14.4 8.2C15.6 7.5 16.9 7 18 7h3"/><path d="m18 4 3 3-3 3"/>
+          </svg>
+          <span>Shuffle</span>
+        </button>
+        <button class="btn ghost" id="uploadBtn" type="button" title="Use your own image">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="1.6"/><path d="m21 15-4.5-4.5L7 21"/>
+          </svg>
+          <span>Upload</span>
+        </button>
+        <button class="btn ghost" id="saveBtn" type="button" title="Save the image as a PNG">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/>
+          </svg>
+          <span>Save</span>
+        </button>
+        <span class="toolbar-sep" aria-hidden="true"></span>
+        <button class="btn primary" id="newBtn" type="button" title="Generate a fresh puzzle">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 5v14M5 12h14"/>
+          </svg>
+          <span>New puzzle</span>
+        </button>
+      </nav>
+      <input id="file" type="file" accept="image/*" hidden>
+    </header>
+
+    <section class="stage" id="stage" aria-label="Puzzle board">
+      <canvas id="canvas" aria-label="Drag pieces onto the board. Neighbouring pieces snap together."></canvas>
+
+      <div class="drop" id="drop" hidden>
+        <div class="drop-card">
+          <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 16V4m0 0L7 9m5-5 5 5"/><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/>
+          </svg>
+          <strong>Drop an image to cut a new puzzle</strong>
+          <span>PNG, JPG, WebP, GIF or SVG</span>
+        </div>
+      </div>
+
+      <div class="busy" id="busy" hidden>
+        <span class="spinner" aria-hidden="true"></span>
+        <span>Cutting the pieces…</span>
+      </div>
+
+      <div class="win" id="win" hidden>
+        <div class="win-card" role="dialog" aria-modal="true" aria-labelledby="winTitle">
+          <button class="win-close" id="winClose" type="button" aria-label="Close">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M6 6l12 12M18 6 6 18"/>
+            </svg>
+          </button>
+          <p class="win-kicker">The last piece is in place</p>
+          <h2 id="winTitle">Puzzle complete</h2>
+          <figure class="win-image">
+            <a id="winImageLink" href="#" target="_blank" rel="noopener" title="Open the full image">
+              <img id="winImage" alt="Completed puzzle image">
+            </a>
+          </figure>
+          <p class="win-meta"><span id="winTime">00:00</span><span class="dot" aria-hidden="true">·</span><span id="winMoves">0 moves</span></p>
+          <div class="win-next" id="winNext">
+            <p class="win-next-label" id="winNextLabel">Ready for a bigger challenge?</p>
+            <button class="btn primary" id="winNextBtn" type="button">Try 24 pieces</button>
+          </div>
+          <div class="win-actions">
+            <button class="btn ghost" id="winSave" type="button">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/>
+              </svg>
+              Save image
+            </button>
+            <button class="btn ghost" id="winAgain" type="button">Play again</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+    </section>
+
+    <div class="dock" id="dock" role="group" aria-label="Puzzle status and settings">
+      <div class="dock-field">
+        <label id="piecesLabel">Pieces <span class="dock-grid" id="gridLabel">—</span></label>
+        <div class="piece-select" id="pieceSelect">
+          <button class="piece-select-trigger" id="pieceSelectTrigger" type="button" role="combobox" aria-haspopup="listbox" aria-expanded="false" aria-controls="pieceListbox" aria-labelledby="piecesLabel pieceSelectValue">
+            <span id="pieceSelectValue">12</span>
+            <svg class="piece-select-chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="m6 9 6 6 6-6"/>
+            </svg>
+          </button>
+          <ul class="piece-select-menu" id="pieceListbox" role="listbox" aria-labelledby="piecesLabel" hidden>
+            <li id="pieceOpt12" role="option" data-value="12" aria-selected="true">12</li>
+            <li id="pieceOpt24" role="option" data-value="24" aria-selected="false">24</li>
+            <li id="pieceOpt48" role="option" data-value="48" aria-selected="false">48</li>
+            <li id="pieceOpt96" role="option" data-value="96" aria-selected="false">96</li>
+            <li id="pieceOpt192" role="option" data-value="192" aria-selected="false">192</li>
+            <li id="pieceOpt384" role="option" data-value="384" aria-selected="false">384</li>
+            <li id="pieceOpt500" role="option" data-value="500" aria-selected="false">500</li>
+          </ul>
+        </div>
+      </div>
+
+      <span class="dock-sep" aria-hidden="true"></span>
+
+      <div class="dock-stat" role="status" aria-live="polite">
+        <b id="progressText">0 / 0</b>
+        <span>placed</span>
+      </div>
+      <div class="dock-stat">
+        <b id="time" class="mono">00:00</b>
+        <span>time</span>
+      </div>
+      <div class="dock-stat">
+        <b id="movesLabel">0</b>
+        <span>moves</span>
+      </div>
+
+      <span class="dock-sep" aria-hidden="true"></span>
+
+      <label class="chip-toggle" title="Show a faint guide image on the board">
+        <input type="checkbox" id="guide">
+        <span>
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/>
+          </svg>
+          Guide
+        </span>
+      </label>
+
+      <div class="dock-progress" id="barTrack" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+        <i id="bar"></i>
+      </div>
+    </div>
+  </div>
+
+  <noscript>
+    <p style="padding:24px;font-family:system-ui,sans-serif;color:#f4ead9">Puzzle Studio needs JavaScript enabled.</p>
+  </noscript>
+
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>
